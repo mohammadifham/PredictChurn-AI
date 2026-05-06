@@ -2,17 +2,18 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-
-DATASET_PATH = "dataset.csv"
-MODEL_PATH = "model.pkl"
-SCALER_PATH = "scaler.pkl"
-METADATA_PATH = "preprocessing_metadata.pkl"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATASET_PATH = str(PROJECT_ROOT / "data" / "dataset.csv")
+MODEL_PATH = str(PROJECT_ROOT / "models" / "model.pkl")
+SCALER_PATH = str(PROJECT_ROOT / "models" / "scaler.pkl")
+METADATA_PATH = str(PROJECT_ROOT / "models" / "preprocessing_metadata.pkl")
 TARGET_COLUMN = "Churn"
 
 

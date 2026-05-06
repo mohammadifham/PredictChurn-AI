@@ -4,11 +4,17 @@ import joblib
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+from pathlib import Path
 
 from auth import create_default_admin, register_user, verify_user
 from main import load_model, prepare_input_dataframe
 
-ARTIFACTS = ("model.pkl", "scaler.pkl", "preprocessing_metadata.pkl")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ARTIFACTS = (
+    str(PROJECT_ROOT / "models" / "model.pkl"),
+    str(PROJECT_ROOT / "models" / "scaler.pkl"),
+    str(PROJECT_ROOT / "models" / "preprocessing_metadata.pkl")
+)
 
 
 def app_header():

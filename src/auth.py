@@ -2,9 +2,11 @@ import json
 import os
 import hashlib
 import hmac
+from pathlib import Path
 
 # Use absolute path to ensure consistency across all running contexts
-USERS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+USERS_FILE = str(PROJECT_ROOT / "backend" / "users.json")
 HASH_ITERATIONS = int(os.getenv("AUTH_HASH_ITERATIONS", "200000"))
 
 
