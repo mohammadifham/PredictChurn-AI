@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useContext } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Brain, Shield, TrendingUp, BarChart3, Zap, Lock } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
@@ -16,21 +15,6 @@ export default function Home() {
 
     return () => clearTimeout(timer);
   }, []);
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  };
 
   const features = [
     {
@@ -67,95 +51,65 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 pt-20 relative overflow-hidden">
-      <AnimatePresence>
-        {showSplash && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.03 }}
-            transition={{ duration: 0.45, ease: 'easeInOut' }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-4"
-          >
-            <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-2xl" />
-            <div className="relative z-10 w-full max-w-lg glass-base rounded-[2rem] border border-cyan-400/25 shadow-2xl shadow-cyan-500/30 p-8 sm:p-10 text-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-                className="mx-auto mb-6 h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/50"
-              >
-                <span className="text-slate-950 text-2xl font-black">CP</span>
-              </motion.div>
-
-              <p className="inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-cyan-300 mb-5">
-                Loading workspace
-              </p>
-
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                Churn Predictor
-              </h1>
-              <p className="text-cyan-300/75 mb-8 leading-relaxed">
-                Preparing your dashboard, prediction tools, and model insights.
-              </p>
-
-              <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden border border-cyan-400/20">
-                <motion.div
-                  initial={{ x: '-30%' }}
-                  animate={{ x: '110%' }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="h-full w-1/2 rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 shadow-lg shadow-cyan-500/60"
-                />
-              </div>
-
-              <p className="mt-4 text-xs uppercase tracking-[0.28em] text-cyan-300/50">
-                Secure • Fast • Ready
-              </p>
+      {showSplash && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-2xl" />
+          <div className="relative z-10 w-full max-w-lg glass-base rounded-[2rem] border border-cyan-400/25 shadow-2xl shadow-cyan-500/30 p-8 sm:p-10 text-center">
+            <div className="mx-auto mb-6 h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+              <span className="text-slate-950 text-2xl font-black">CP</span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <p className="inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-cyan-300 mb-5">
+              Loading workspace
+            </p>
+
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+              Churn Predictor
+            </h1>
+            <p className="text-cyan-300/75 mb-8 leading-relaxed">
+              Preparing your dashboard, prediction tools, and model insights.
+            </p>
+
+            <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden border border-cyan-400/20">
+              <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 shadow-lg shadow-cyan-500/60 splash-bar" />
+            </div>
+
+            <p className="mt-4 text-xs uppercase tracking-[0.28em] text-cyan-300/50">
+              Secure • Fast • Ready
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto w-full">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="text-center"
-          >
-            <motion.div variants={item} className="mb-6">
+          <div className="text-center">
+            <div className="mb-6">
               <div className="inline-block px-4 py-2 glass-dark text-cyan-300 rounded-full text-sm font-semibold border border-cyan-500/50 shadow-lg shadow-cyan-500/30">
                 Advanced Churn Prediction System
               </div>
-            </motion.div>
+            </div>
             
-            <motion.h1
-              variants={item}
-              className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
-            >
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Predict Customer Churn with
               <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500 bg-clip-text text-transparent"> AI Precision</span>
-            </motion.h1>
+            </h1>
             
-            <motion.p
-              variants={item}
-              className="text-xl md:text-2xl text-cyan-300/80 mb-8 max-w-2xl mx-auto leading-relaxed"
-            >
+            <p className="text-xl md:text-2xl text-cyan-300/80 mb-8 max-w-2xl mx-auto leading-relaxed">
               Advanced machine learning system that predicts customer churn with high accuracy, helping you retain valuable customers.
-            </motion.p>
+            </p>
 
-            <motion.div
-              variants={item}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
-            >
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link href={user ? '/predict' : '/login?next=/predict'} className="btn-primary-large inline-flex items-center justify-center">
                 Get Started <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
               <Link href={user ? '/dashboard' : '/login?next=/dashboard'} className="btn-secondary-outline inline-flex items-center justify-center">
                 View Dashboard
               </Link>
-            </motion.div>
+            </div>
 
-            <motion.div variants={item} className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               <div className="glass-dark p-6 rounded-2xl border border-cyan-500/30">
                 <div className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">21</div>
                 <div className="text-sm text-cyan-300/70 mt-2">Features</div>
@@ -168,8 +122,8 @@ export default function Home() {
                 <div className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">99%</div>
                 <div className="text-sm text-cyan-300/70 mt-2">Uptime</div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -177,27 +131,17 @@ export default function Home() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/20 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="section-title">Powerful Features</h2>
             <p className="section-subtitle">Everything you need to predict and manage customer churn</p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, idx) => {
               const Icon = feature.icon;
               return (
-                <motion.div
+                <div
                   key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  viewport={{ once: true }}
                   className="card-hover group"
                 >
                   <div className="w-12 h-12 bg-gradient-to-br from-cyan-400/20 to-purple-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-cyan-500/50 transition-all border border-cyan-400/30">
@@ -205,7 +149,7 @@ export default function Home() {
                   </div>
                   <h3 className="text-lg font-bold text-cyan-300 mb-2">{feature.title}</h3>
                   <p className="text-cyan-300/70">{feature.description}</p>
-                </motion.div>
+                </div>
               );
             })}
           </div>

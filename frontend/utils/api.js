@@ -45,6 +45,12 @@ export const adminAPI = {
       admin_password: adminPassword,
       role,
     }),
+  createUser: (adminUsername, adminPassword, username, password, role = 'user') =>
+    api.post('/auth/users/create', { admin_username: adminUsername, admin_password: adminPassword, username, password, role }),
+  setPassword: (adminUsername, adminPassword, username, newPassword) =>
+    api.post(`/auth/users/${encodeURIComponent(username)}/password`, { admin_username: adminUsername, admin_password: adminPassword, new_password: newPassword }),
+  bulkAction: (adminUsername, adminPassword, action, users) =>
+    api.post('/auth/users/bulk', { admin_username: adminUsername, admin_password: adminPassword, action, users }),
 };
 
 // Prediction endpoints

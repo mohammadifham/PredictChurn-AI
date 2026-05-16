@@ -153,3 +153,21 @@ def set_user_role(username: str, role: str) -> bool:
 
     save_users(users)
     return True
+
+
+def set_user_password(username: str, new_password: str) -> bool:
+    username = _normalize_username(username)
+    if not username or len(new_password) < 8:
+        return False
+    users = load_users()
+    if username not in users:
+        return False
+    stored = users[username]
+    # Replace stored hash while preserving role if present
+    if isinstance(stored, str):
+        users[username] = _hash_password(new_password)
+    else:
+        stored["hash"] = _hash_password(new_password)
+        users[username] = stored
+    save_users(users)
+    return True

@@ -17,7 +17,8 @@ if SRC_PATH not in sys.path:
     sys.path.insert(0, SRC_PATH)
 
 from auth import create_default_admin, register_user, verify_user
-from auth import get_user_role, list_users, delete_user, set_user_role
+from auth import get_user_role, list_users, delete_user, set_user_role, set_user_password
+from typing import Any, Dict, Optional, List
 from main import load_model, prepare_input_dataframe
 
 
@@ -138,6 +139,27 @@ class RoleUpdateRequest(BaseModel):
     role: str = Field(default="admin")
 
 
+class AdminCreateRequest(BaseModel):
+    admin_username: str
+    admin_password: str
+    username: str = Field(min_length=3, max_length=64)
+    password: str = Field(min_length=8, max_length=128)
+    role: Optional[str] = Field(default="user")
+
+
+class AdminPasswordRequest(BaseModel):
+    admin_username: str
+    admin_password: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+class AdminBulkRequest(BaseModel):
+    admin_username: str
+    admin_password: str
+    action: str
+    users: List[str]
+
+
 @app.post("/auth/users")
 async def auth_list_users(auth: AdminAuthRequest):
     if not verify_user(auth.admin_username, auth.admin_password):
@@ -145,6 +167,67 @@ async def auth_list_users(auth: AdminAuthRequest):
     if get_user_role(auth.admin_username) != "admin":
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return list_users()
+
+
+@app.post("/auth/users/create")
+async def auth_create_user(payload: AdminCreateRequest):
+    if not verify_user(payload.admin_username, payload.admin_password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    if get_user_role(payload.admin_username) != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    if register_user(payload.username, payload.password, role=(payload.role or "user")):
+        return {"username": payload.username, "role": (payload.role or "user"), "message": "User created"}
+    raise HTTPException(status_code=409, detail="User already exists or password policy failed")
+
+
+@app.post("/auth/users/{username}/password")
+async def auth_set_password(username: str, payload: AdminPasswordRequest):
+    if not verify_user(payload.admin_username, payload.admin_password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    if get_user_role(payload.admin_username) != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    if set_user_password(username, payload.new_password):
+        return {"username": username, "message": "Password updated"}
+    raise HTTPException(status_code=404, detail="User not found or password invalid")
+
+
+@app.post("/auth/users/bulk")
+async def auth_bulk_action(payload: AdminBulkRequest):
+    if not verify_user(payload.admin_username, payload.admin_password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    if get_user_role(payload.admin_username) != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+
+    results = {"action": payload.action, "processed": {}, "errors": {}}
+    for u in payload.users:
+        try:
+            if payload.action == "delete":
+                if u == payload.admin_username:
+                    results["errors"][u] = "Cannot delete acting admin"
+                    continue
+                ok = delete_user(u)
+                if ok:
+                    results["processed"][u] = "deleted"
+                else:
+                    results["errors"][u] = "not found"
+            elif payload.action == "promote":
+                ok = set_user_role(u, "admin")
+                if ok:
+                    results["processed"][u] = "promoted"
+                else:
+                    results["errors"][u] = "not found"
+            elif payload.action == "demote":
+                ok = set_user_role(u, "user")
+                if ok:
+                    results["processed"][u] = "demoted"
+                else:
+                    results["errors"][u] = "not found"
+            else:
+                results["errors"][u] = f"unknown action {payload.action}"
+        except Exception as e:
+            results["errors"][u] = str(e)
+
+    return results
 
 
 @app.delete("/auth/users/{username}")
