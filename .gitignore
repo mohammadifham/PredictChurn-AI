@@ -17,6 +17,7 @@ env/
 .env.local
 .env.*.local
 .DS_Store
+ .venv-local/
 predictions_*.csv
 users.json
 .streamlit/
