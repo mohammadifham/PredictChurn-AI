@@ -76,11 +76,11 @@ def create_default_admin():
 
     users = load_users()
     if "admin" not in users:
-        users["admin"] = _hash_password(admin_password)
+        users["admin"] = {"hash": _hash_password(admin_password), "role": "admin"}
         save_users(users)
 
 
-def register_user(username: str, password: str) -> bool:
+def register_user(username: str, password: str, role: str = "user") -> bool:
     username = _normalize_username(username)
     if not username or len(password) < 8:
         return False
@@ -88,7 +88,7 @@ def register_user(username: str, password: str) -> bool:
     users = load_users()
     if username in users:
         return False
-    users[username] = _hash_password(password)
+    users[username] = {"hash": _hash_password(password), "role": role}
     save_users(users)
     return True
 
@@ -98,4 +98,41 @@ def verify_user(username: str, password: str) -> bool:
     users = load_users()
     if username not in users:
         return False
-    return _verify_password(password, users[username])
+    stored = users[username]
+    # Backward compatibility: stored may be a raw hash string
+    if isinstance(stored, str):
+        return _verify_password(password, stored)
+    # New format
+    return _verify_password(password, stored.get("hash", ""))
+
+
+def get_user_role(username: str) -> str:
+    username = _normalize_username(username)
+    users = load_users()
+    if username not in users:
+        return "user"
+    stored = users[username]
+    if isinstance(stored, str):
+        return "user"
+    return stored.get("role", "user")
+
+
+def list_users() -> dict:
+    users = load_users()
+    out = {}
+    for k, v in users.items():
+        if isinstance(v, str):
+            out[k] = "user"
+        else:
+            out[k] = v.get("role", "user")
+    return out
+
+
+def delete_user(username: str) -> bool:
+    username = _normalize_username(username)
+    users = load_users()
+    if username not in users:
+        return False
+    users.pop(username)
+    save_users(users)
+    return True

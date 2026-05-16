@@ -34,6 +34,13 @@ export const authAPI = {
     api.post('/auth/login', { username, password }),
 };
 
+export const adminAPI = {
+  listUsers: (adminUsername, adminPassword) =>
+    api.post('/auth/users', { admin_username: adminUsername, admin_password: adminPassword }),
+  deleteUser: (username, adminUsername, adminPassword) =>
+    api.delete(`/auth/users/${encodeURIComponent(username)}`, { data: { admin_username: adminUsername, admin_password: adminPassword } }),
+};
+
 // Prediction endpoints
 export const predictionAPI = {
   predict: (features, username = null) =>

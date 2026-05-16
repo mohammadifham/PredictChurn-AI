@@ -3,21 +3,27 @@ import { createContext, useEffect, useState } from 'react';
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // { username, role }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Restore user from localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(storedUser);
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        setUser(null);
+      }
     }
     setLoading(false);
   }, []);
 
-  const login = (username) => {
-    setUser(username);
-    localStorage.setItem('user', username);
+  const login = (userObj) => {
+    setUser(userObj);
+    try {
+      localStorage.setItem('user', JSON.stringify(userObj));
+    } catch (e) {}
   };
 
   const logout = () => {

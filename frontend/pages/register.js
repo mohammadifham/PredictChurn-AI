@@ -25,22 +25,24 @@ export default function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
 
     setLoading(true);
 
     try {
-      await authAPI.register(username, password);
+      const res = await authAPI.register(username, password);
+      const role = res.data?.role || 'user';
       setSuccess('Registration successful! Logging you in...');
       setTimeout(() => {
-        login(username);
+        login({ username, role });
         router.push('/predict');
       }, 1000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed');
+      const detail = err.response?.data?.detail || err.message || 'Registration failed';
+      setError(detail);
     } finally {
       setLoading(false);
     }

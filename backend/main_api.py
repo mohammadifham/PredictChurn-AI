@@ -17,6 +17,7 @@ if SRC_PATH not in sys.path:
     sys.path.insert(0, SRC_PATH)
 
 from auth import create_default_admin, register_user, verify_user
+from auth import get_user_role, list_users, delete_user
 from main import load_model, prepare_input_dataframe
 
 
@@ -78,6 +79,7 @@ class PredictionResponse(BaseModel):
 class UserRegisterRequest(BaseModel):
     username: str = Field(min_length=3, max_length=64)
     password: str = Field(min_length=8, max_length=128)
+    role: Optional[str] = Field(default="user")
 
 
 class UserLoginRequest(BaseModel):
@@ -88,6 +90,7 @@ class UserLoginRequest(BaseModel):
 class UserResponse(BaseModel):
     username: str
     message: str
+    role: Optional[str] = None
 
 
 class HealthResponse(BaseModel):
@@ -108,8 +111,8 @@ async def health():
 # Registration endpoint
 @app.post("/auth/register", response_model=UserResponse)
 async def register(user: UserRegisterRequest):
-    if register_user(user.username, user.password):
-        return {"username": user.username, "message": "User registered successfully"}
+    if register_user(user.username, user.password, role=(user.role or "user")):
+        return {"username": user.username, "message": "User registered successfully", "role": (user.role or "user")}
     else:
         raise HTTPException(status_code=409, detail="User already exists or password does not meet policy")
 
@@ -118,9 +121,38 @@ async def register(user: UserRegisterRequest):
 @app.post("/auth/login", response_model=UserResponse)
 async def login(user: UserLoginRequest):
     if verify_user(user.username, user.password):
-        return {"username": user.username, "message": "Login successful"}
+        role = get_user_role(user.username)
+        return {"username": user.username, "message": "Login successful", "role": role}
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+class AdminAuthRequest(BaseModel):
+    admin_username: str
+    admin_password: str
+
+
+@app.post("/auth/users")
+async def auth_list_users(auth: AdminAuthRequest):
+    if not verify_user(auth.admin_username, auth.admin_password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    if get_user_role(auth.admin_username) != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    return list_users()
+
+
+@app.delete("/auth/users/{username}")
+async def auth_delete_user(username: str, auth: AdminAuthRequest):
+    if not verify_user(auth.admin_username, auth.admin_password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    if get_user_role(auth.admin_username) != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    if username == auth.admin_username:
+        raise HTTPException(status_code=400, detail="Cannot delete the acting admin")
+    if delete_user(username):
+        return {"username": username, "message": "User deleted"}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
 
 
 # Prediction endpoint

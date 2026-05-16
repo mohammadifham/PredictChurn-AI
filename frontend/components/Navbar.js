@@ -13,6 +13,7 @@ export default function Navbar() {
         { href: '/', label: 'Home' },
         { href: '/predict', label: 'Predict' },
         { href: '/dashboard', label: 'Dashboard' },
+        ...(user.role === 'admin' ? [{ href: '/admin', label: 'Admin' }] : []),
       ]
     : [{ href: '/', label: 'Home' }];
 
@@ -53,7 +54,10 @@ export default function Navbar() {
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
                     <p className="text-xs text-cyan-400/70 uppercase tracking-wider">User</p>
-                    <p className="text-sm font-semibold text-cyan-300">{user}</p>
+                    <p className="text-sm font-semibold text-cyan-300">{user.username}</p>
+                    {user.role === 'admin' && (
+                      <p className="text-xs text-emerald-300">Admin</p>
+                    )}
                   </div>
                 </div>
                 <button

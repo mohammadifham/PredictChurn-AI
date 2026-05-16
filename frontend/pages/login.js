@@ -19,8 +19,9 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await authAPI.login(username, password);
-      login(username);
+        const res = await authAPI.login(username, password);
+        const role = res.data?.role || 'user';
+        login({ username, role });
       router.push('/predict');
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed');
