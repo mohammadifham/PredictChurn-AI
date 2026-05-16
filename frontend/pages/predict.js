@@ -8,13 +8,14 @@ export default function Predict() {
   const router = useRouter();
   const { user, loading: authLoading } = useContext(AuthContext);
   const [modelInfo, setModelInfo] = useState(null);
+  const [modelInfoLoading, setModelInfoLoading] = useState(true);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchModelInfo();
+    loadModelInfo();
   }, []);
 
   useEffect(() => {
@@ -23,7 +24,9 @@ export default function Predict() {
     }
   }, [authLoading, router, user]);
 
-  const fetchModelInfo = async () => {
+  const loadModelInfo = async () => {
+    setModelInfoLoading(true);
+    setError('');
     try {
       const response = await predictionAPI.getModelInfo();
       setModelInfo(response.data);
@@ -38,7 +41,10 @@ export default function Predict() {
       });
       setFormData(initial);
     } catch (err) {
-      setError('Failed to fetch model information');
+      setError('Failed to fetch model information. Please retry.');
+    }
+    finally {
+      setModelInfoLoading(false);
     }
   };
 
@@ -55,8 +61,14 @@ export default function Predict() {
     setPrediction(null);
     setLoading(true);
 
+    if (!modelInfo) {
+      setError('Model information is not loaded yet. Please retry.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await predictionAPI.predict(formData, user);
+      const response = await predictionAPI.predict(formData, user?.username || null);
       setPrediction(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || 'Prediction failed');
@@ -65,27 +77,16 @@ export default function Predict() {
     }
   };
 
-  if (!modelInfo) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 pt-20">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mb-4"></div>
-          <p className="text-cyan-300/80 text-lg">Loading prediction model...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!authLoading && !user) {
     return null;
   }
 
-  const numericFeatures = modelInfo.features.filter((f) =>
+  const numericFeatures = modelInfo?.features.filter((f) =>
     modelInfo.numeric_features.includes(f)
-  );
-  const categoricalFeatures = modelInfo.features.filter((f) =>
+  ) || [];
+  const categoricalFeatures = modelInfo?.features.filter((f) =>
     modelInfo.categorical_features.includes(f)
-  );
+  ) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 py-12 pt-32">
@@ -105,7 +106,7 @@ export default function Predict() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <form onSubmit={handlePredict} className="card">
-              {numericFeatures.length > 0 && (
+              {!modelInfoLoading && numericFeatures.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-lg font-bold text-cyan-300 mb-6 flex items-center space-x-2">
                     <Zap className="w-5 h-5" />
@@ -130,7 +131,7 @@ export default function Predict() {
                 </div>
               )}
 
-              {categoricalFeatures.length > 0 && (
+              {!modelInfoLoading && categoricalFeatures.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-lg font-bold text-cyan-300 mb-6 flex items-center space-x-2">
                     <Zap className="w-5 h-5" />
@@ -160,10 +161,25 @@ export default function Predict() {
                 </div>
               )}
 
+              {modelInfoLoading && (
+                <div className="mb-6 p-4 rounded-lg border border-cyan-400/20 bg-cyan-500/10 text-cyan-200">
+                  Loading prediction model fields...
+                </div>
+              )}
+
+              {!modelInfoLoading && error && !modelInfo && (
+                <div className="mb-6 p-4 rounded-lg border border-red-400/30 bg-red-500/10 text-red-200 flex items-center justify-between gap-4">
+                  <p>{error}</p>
+                  <button type="button" onClick={loadModelInfo} className="px-4 py-2 rounded bg-cyan-500 text-slate-950 font-semibold">
+                    Retry
+                  </button>
+                </div>
+              )}
+
               <div className="border-t border-cyan-500/20 pt-8 flex space-x-4">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || modelInfoLoading || !modelInfo}
                   className="flex-1 btn-primary-large flex items-center justify-center disabled:opacity-50"
                 >
                   <Zap className="w-5 h-5 mr-2" />
