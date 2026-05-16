@@ -87,6 +87,7 @@ export default function Predict() {
   const categoricalFeatures = modelInfo?.features.filter((f) =>
     modelInfo.categorical_features.includes(f)
   ) || [];
+  const totalFeatures = modelInfo?.features?.length ?? 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 py-12 pt-32">
@@ -195,7 +196,7 @@ export default function Predict() {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-cyan-300/60">Total Features</p>
-                  <p className="text-2xl font-bold text-cyan-300">{modelInfo.features.length}</p>
+                  <p className="text-2xl font-bold text-cyan-300">{totalFeatures}</p>
                 </div>
                 <div>
                   <p className="text-sm text-cyan-300/60">Model Type</p>
