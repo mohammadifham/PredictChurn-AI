@@ -45,6 +45,21 @@ export default function AdminPage() {
     }
   };
 
+  const handlePromote = async (username) => {
+    if (!confirm(`Promote ${username} to admin?`)) return;
+    const pwd = window.prompt('Enter your admin password') || '';
+    if (!pwd) return;
+    setLoading(true);
+    try {
+      await adminAPI.setRole(username, 'admin', user.username, pwd);
+      await fetchUsers();
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || 'Promotion failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 py-24 pt-32">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,6 +85,11 @@ export default function AdminPage() {
                   <div className="text-sm text-cyan-300/60">{role}</div>
                 </div>
                 <div>
+                  {role !== 'admin' && (
+                    <button onClick={() => handlePromote(u)} className="px-3 py-1 bg-emerald-500/70 rounded text-white mr-2">
+                      Promote
+                    </button>
+                  )}
                   <button disabled={u === user.username} onClick={() => handleDelete(u)} className="px-3 py-1 bg-red-500/60 rounded text-white">Delete</button>
                 </div>
               </div>

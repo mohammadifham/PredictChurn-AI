@@ -39,6 +39,12 @@ export const adminAPI = {
     api.post('/auth/users', { admin_username: adminUsername, admin_password: adminPassword }),
   deleteUser: (username, adminUsername, adminPassword) =>
     api.delete(`/auth/users/${encodeURIComponent(username)}`, { data: { admin_username: adminUsername, admin_password: adminPassword } }),
+  setRole: (username, role, adminUsername, adminPassword) =>
+    api.post(`/auth/users/${encodeURIComponent(username)}/role`, {
+      admin_username: adminUsername,
+      admin_password: adminPassword,
+      role,
+    }),
 };
 
 // Prediction endpoints

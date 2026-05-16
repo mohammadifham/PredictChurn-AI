@@ -136,3 +136,20 @@ def delete_user(username: str) -> bool:
     users.pop(username)
     save_users(users)
     return True
+
+
+def set_user_role(username: str, role: str) -> bool:
+    username = _normalize_username(username)
+    users = load_users()
+    if username not in users:
+        return False
+
+    stored = users[username]
+    if isinstance(stored, str):
+        users[username] = {"hash": stored, "role": role}
+    else:
+        stored["role"] = role
+        users[username] = stored
+
+    save_users(users)
+    return True

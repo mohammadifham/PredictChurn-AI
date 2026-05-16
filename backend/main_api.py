@@ -17,7 +17,7 @@ if SRC_PATH not in sys.path:
     sys.path.insert(0, SRC_PATH)
 
 from auth import create_default_admin, register_user, verify_user
-from auth import get_user_role, list_users, delete_user
+from auth import get_user_role, list_users, delete_user, set_user_role
 from main import load_model, prepare_input_dataframe
 
 
@@ -132,6 +132,12 @@ class AdminAuthRequest(BaseModel):
     admin_password: str
 
 
+class RoleUpdateRequest(BaseModel):
+    admin_username: str
+    admin_password: str
+    role: str = Field(default="admin")
+
+
 @app.post("/auth/users")
 async def auth_list_users(auth: AdminAuthRequest):
     if not verify_user(auth.admin_username, auth.admin_password):
@@ -153,6 +159,17 @@ async def auth_delete_user(username: str, auth: AdminAuthRequest):
         return {"username": username, "message": "User deleted"}
     else:
         raise HTTPException(status_code=404, detail="User not found")
+
+
+@app.post("/auth/users/{username}/role")
+async def auth_set_role(username: str, payload: RoleUpdateRequest):
+    if not verify_user(payload.admin_username, payload.admin_password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    if get_user_role(payload.admin_username) != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    if set_user_role(username, payload.role):
+        return {"username": username, "role": payload.role, "message": "Role updated"}
+    raise HTTPException(status_code=404, detail="User not found")
 
 
 # Prediction endpoint
