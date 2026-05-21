@@ -16,7 +16,12 @@ SRC_PATH = str(PROJECT_ROOT / "src")
 if SRC_PATH not in sys.path:
     sys.path.insert(0, SRC_PATH)
 
-from auth import create_default_admin, register_user, verify_user
+from auth import (
+    create_default_admin,
+    create_admins_from_env,
+    register_user,
+    verify_user,
+)
 from auth import get_user_role, list_users, delete_user, set_user_role, set_user_password
 from typing import Any, Dict, Optional, List
 from main import load_model, prepare_input_dataframe
@@ -38,8 +43,12 @@ ALLOWED_ORIGINS = [
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    if APP_ENV != "production":
-        create_default_admin()
+    # Create any default admin(s) provided via environment.
+    # `create_default_admin` is controlled by `CREATE_DEFAULT_ADMIN` and
+    # `DEFAULT_ADMIN_PASSWORD`. `create_admins_from_env` allows multiple
+    # admin accounts via `DEFAULT_ADMIN_USERS` (format: user:pass,user2:pass2).
+    create_default_admin()
+    create_admins_from_env()
     logger.info("Application startup complete")
     yield
     logger.info("Application shutdown complete")

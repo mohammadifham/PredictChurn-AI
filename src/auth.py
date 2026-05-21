@@ -80,6 +80,40 @@ def create_default_admin():
         save_users(users)
 
 
+def create_admins_from_env():
+    """Create multiple admin users from env var DEFAULT_ADMIN_USERS.
+
+    Format: "user1:password1,user2:password2"
+    Passwords must be at least 8 characters. Existing users are not overwritten.
+    """
+    spec = os.getenv("DEFAULT_ADMIN_USERS", "").strip()
+    if not spec:
+        return
+
+    items = [s.strip() for s in spec.split(",") if s.strip()]
+    if not items:
+        return
+
+    users = load_users()
+    changed = False
+    for item in items:
+        try:
+            username, password = item.split(":", 1)
+            username = _normalize_username(username)
+            if not username or len(password) < 8:
+                continue
+            if username in users:
+                continue
+            users[username] = {"hash": _hash_password(password), "role": "admin"}
+            changed = True
+        except ValueError:
+            # ignore malformed entries
+            continue
+
+    if changed:
+        save_users(users)
+
+
 def register_user(username: str, password: str, role: str = "user") -> bool:
     username = _normalize_username(username)
     if not username or len(password) < 8:
